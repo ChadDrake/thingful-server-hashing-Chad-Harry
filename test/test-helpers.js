@@ -1,3 +1,4 @@
+const bcrypt = require("bcryptjs");
 function makeUsersArray() {
   return [
     {
@@ -231,11 +232,18 @@ function cleanTables(db) {
       RESTART IDENTITY CASCADE`
   );
 }
+function prepUsers(users) {
+  const preppedUsers = users.map((user) => ({
+    ...user,
+    password: bcrypt.hashSync(user.password, 1),
+  }));
+  return preppedUsers;
+}
 
 function seedThingsTables(db, users, things, reviews = []) {
   return db
     .into("thingful_users")
-    .insert(users)
+    .insert(prepUsers(users))
     .then(() => db.into("thingful_things").insert(things))
     .then(() => reviews.length && db.into("thingful_reviews").insert(reviews));
 }
@@ -243,7 +251,7 @@ function seedThingsTables(db, users, things, reviews = []) {
 function seedMaliciousThing(db, user, thing) {
   return db
     .into("thingful_users")
-    .insert([user])
+    .insert(user)
     .then(() => db.into("thingful_things").insert([thing]));
 }
 function makeAuthHeader(user) {
@@ -266,4 +274,5 @@ module.exports = {
   cleanTables,
   seedThingsTables,
   seedMaliciousThing,
+  prepUsers,
 };

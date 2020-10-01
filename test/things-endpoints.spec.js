@@ -44,16 +44,23 @@ describe("Things Endpoints", function () {
     context(`Given an XSS attack thing`, () => {
       const testUser = helpers.makeUsersArray()[1];
       const { maliciousThing, expectedThing } = helpers.makeMaliciousThing(
-        testUser
+        helpers.prepUsers([testUser])[0]
       );
-
       beforeEach("insert malicious thing", () => {
-        return helpers.seedMaliciousThing(db, testUser, maliciousThing);
+        return helpers.seedMaliciousThing(
+          db,
+          helpers.prepUsers([testUser])[0],
+          maliciousThing
+        );
       });
 
       it("removes XSS attack content", () => {
         return supertest(app)
           .get(`/api/things`)
+          .set(
+            "Authorization",
+            helpers.makeAuthHeader(helpers.prepUsers([testUser])[0])
+          )
           .expect(200)
           .expect((res) => {
             expect(res.body[0].title).to.eql(expectedThing.title);
@@ -97,11 +104,15 @@ describe("Things Endpoints", function () {
     context(`Given an XSS attack thing`, () => {
       const testUser = helpers.makeUsersArray()[1];
       const { maliciousThing, expectedThing } = helpers.makeMaliciousThing(
-        testUser
+        helpers.prepUsers([testUser])[0]
       );
 
       beforeEach("insert malicious thing", () => {
-        return helpers.seedMaliciousThing(db, testUser, maliciousThing);
+        return helpers.seedMaliciousThing(
+          db,
+          helpers.prepUsers([testUser])[0],
+          maliciousThing
+        );
       });
 
       it("removes XSS attack content", () => {
